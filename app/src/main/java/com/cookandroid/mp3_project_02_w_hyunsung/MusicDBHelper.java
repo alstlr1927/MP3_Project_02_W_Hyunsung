@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class MusicDBHelper extends SQLiteOpenHelper {
     private Context context;
 
-    //singleTone
+    //singleTone !!
     private static MusicDBHelper musicDBHelper;
 
     private MusicDBHelper(Context context) {
