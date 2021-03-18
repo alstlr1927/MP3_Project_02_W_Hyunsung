@@ -25,6 +25,11 @@ public class MainActivity extends AppCompatActivity {
 
         findViewByIdFunc();
 
+        setViewPager();
+
+    }
+
+    private void setViewPager() {
         pagerAdapter = new FragmentAdapter(this, numberPage);
         viewPager2.setAdapter(pagerAdapter);
 
