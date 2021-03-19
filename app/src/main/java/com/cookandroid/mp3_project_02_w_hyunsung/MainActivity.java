@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -47,12 +48,15 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivPlayerAlbumCover, imgDrawerMenuAlbumCover;
     private TextView tvPlayerTitle, tvPlayerArtist, tvCurrentTime, tvDuration;
     private SeekBar seekBar;
-    private Button btnPrev, btnPlayPause, btnNext;
+    private Button btnPrev, btnPlayPause, btnNext, btnLike;
 
     private ArrayList<MusicData> musicList = new ArrayList<>();
+    private ArrayList<MusicData> musicList_Like = new ArrayList<>();
+
     private int numberPage = 3;
     private int index;
     private boolean nowPlaying = false;
+    private boolean like = false;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -66,8 +70,15 @@ public class MainActivity extends AppCompatActivity {
 
         setViewPager();
 
-        DBHelper = MusicDBHelper.getInstance(getApplicationContext());
+        DBHelper = MusicDBHelper.getInstance(MainActivity.this);
         musicList = DBHelper.compareArrayList();
+        boolean flg = DBHelper.insertMusicDataToDB(musicList);
+        if(flg) {
+            Log.d("list", "success");
+        } else {
+            Log.d("list", "Fail");
+        }
+
 
         eventHandlerFunc();
 
@@ -129,6 +140,39 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.d("Next", e.getMessage());
             }
+        });
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean startTouch) {
+                if(startTouch == true) {
+                    mPlayer.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        btnLike.setOnClickListener((View v) -> {
+            if(like == true){
+                like = false;
+                musicData.setLiked(0);
+                musicList_Like.remove(musicData);
+                btnLike.setBackgroundResource(R.drawable.ic_outline_brightness_2_24);
+            }else{
+                like = true;
+                musicData.setLiked(1);
+                musicList_Like.add(musicData);
+                btnLike.setBackgroundResource(R.drawable.ic_baseline_brightness_2_24);
+            }
+            //musicData를 frament_like로 이동
+            //musiclist_like insert시키기
         });
     }
 
@@ -200,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
         btnPrev = findViewById(R.id.btnPrev);
         drawerLayout = findViewById(R.id.drawerLayout);
         imgDrawerMenuAlbumCover = findViewById(R.id.imgDrawerMenuAlbumCover);
+        btnLike = findViewById(R.id.btnLike);
     }
 
     public void setPlayerData(int pos) {
@@ -236,6 +281,14 @@ public class MainActivity extends AppCompatActivity {
             seekBar.setProgress(0);
             seekBar.setMax(Integer.parseInt(musicData.getDuration()));
             setSeekBarThread();
+
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    musicData.setPlayCount(musicData.getPlayCount() + 1);
+                    btnNext.callOnClick();
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }

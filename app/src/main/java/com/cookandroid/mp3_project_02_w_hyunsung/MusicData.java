@@ -13,15 +13,15 @@ public class MusicData {
         this(null, null, null, null, null, 0, 0);
     }
 
-    public MusicData(String id, String artist, String title, String albumCover, String duration, int liked, int playCount) {
+    public MusicData(String id, String artist, String title, String albumCover, String duration, int playCount, int liked) {
         super();
         this.id = id;
         this.artist = artist;
         this.title = title;
         this.albumCover = albumCover;
         this.duration = duration;
-        this.liked = liked;
         this.playCount = playCount;
+        this.liked = liked;
     }
 
     public String getId() {

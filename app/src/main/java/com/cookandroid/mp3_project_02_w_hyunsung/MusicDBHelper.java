@@ -38,13 +38,13 @@ public class MusicDBHelper extends SQLiteOpenHelper {
 
         sqLiteDatabase.execSQL(
                 "CREATE TABLE musicTBL(" +
-                        "id VARCHAR(15) PRIMARY KEY," +
-                        "artist VARCHAR(15)," +
-                        "title VARCHAR(15)," +
-                        "albumArt VARCHAR(15)," +
-                        "duration VARCHAR(15)," +
-                        "liked INTEGER," +
-                        "count INTEGER );");
+                        "id VARCHAR(100) PRIMARY KEY," +
+                        "artist VARCHAR(100)," +
+                        "title VARCHAR(100)," +
+                        "albumArt VARCHAR(100)," +
+                        "duration VARCHAR(100)," +
+                        "click INTEGER," +
+                        "liked INTEGER );");
 
     }
 
