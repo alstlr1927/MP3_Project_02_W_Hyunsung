@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.FileNotFoundException;
@@ -27,7 +29,8 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
     //2. 멤버 변수를 만든다.
     private OnItemClickListener mListener;
 
-    public MusicAdapter(Context context) {
+    public MusicAdapter(Context context, ArrayList<MusicData> musicData) {
+        this.musicData = musicData;
         this.context = context;
     }
 
@@ -43,7 +46,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
     public void onBindViewHolder(@NonNull CustomViewHolder holder, int position) {
 
         //앨범 이미지 비트맵으로 만들기
-        Bitmap albumImg = getAlbumIng(context, Integer.parseInt(musicData.get(position).getAlbumCover()), 200);
+        Bitmap albumImg = getCoverImg(context, Integer.parseInt(musicData.get(position).getAlbumCover()), 200);
         if(albumImg != null) {
             holder.albumCover.setImageBitmap(albumImg);
         }
@@ -57,7 +60,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
     }
 
     // 앨범아트 가져오는 함수
-    private Bitmap getAlbumIng(Context context, int albumArt, int imgMaxSize) {
+    public Bitmap getCoverImg(Context context, int albumArt, int imgMaxSize) {
         BitmapFactory.Options options = new BitmapFactory.Options();
 
         /*컨텐트 프로바이더(Content Provider)는 앱 간의 데이터 공유를 위해 사용됨.
@@ -77,7 +80,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
             try {
                 fd = contentResolver.openFileDescriptor(uri, "r");
 
-                //메모리할당을 하지 않으면서 해댱된 정볼르 읽올수 있음.
+                //메모리할당을 하지 않으면서 해댱된 정보를 읽올수 있음.
                 options.inJustDecodeBounds =true;
 
                 int scale = 0;
@@ -132,11 +135,13 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
             this.duration = itemView.findViewById(R.id.item_tvDuration);
 
             //4. 구현한다.
-            itemView.setOnClickListener((View v) -> {
-                int pos = getAdapterPosition();
-                if(pos != RecyclerView.NO_POSITION) {
-
-                    mListener.onItemClick(v, pos);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int pos = getAdapterPosition();
+                    if(pos != RecyclerView.NO_POSITION) {
+                        mListener.onItemClick(v, pos);
+                    }
                 }
             });
         }

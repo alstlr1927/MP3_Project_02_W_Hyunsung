@@ -1,13 +1,36 @@
 package com.cookandroid.mp3_project_02_w_hyunsung;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 import me.relex.circleindicator.CircleIndicator3;
 
@@ -16,17 +39,43 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager2;
     private CircleIndicator3 indicator;
     private FragmentStateAdapter pagerAdapter;
-    private int numberPage = 3;
+    private MediaPlayer mPlayer = new MediaPlayer();
 
+    private MainActivity mainActivity;
+    private MusicDBHelper DBHelper;
+    private MusicData musicData;
+    private MusicAdapter adapter;
+
+    private DrawerLayout drawerLayout;
+    private ImageView ivPlayerAlbumCover, imgDrawerMenuAlbumCover;
+    private TextView tvPlayerTitle, tvPlayerArtist, tvCurrentTime, tvDuration;
+    private SeekBar seekBar;
+    private Button btnPrev, btnPlayPause, btnNext;
+
+    private ArrayList<MusicData> musicList = new ArrayList<>();
+    private int numberPage = 3;
+    private int index;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        requestPermissionFunc();
+
         findViewByIdFunc();
 
         setViewPager();
 
+        DBHelper = MusicDBHelper.getInstance(getApplicationContext());
+        musicList = DBHelper.compareArrayList();
+    }
+
+    private void requestPermissionFunc() {
+        ActivityCompat.requestPermissions(this,
+                new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE}, MODE_PRIVATE);
     }
 
     private void setViewPager() {
@@ -80,5 +129,50 @@ public class MainActivity extends AppCompatActivity {
     private void findViewByIdFunc() {
         viewPager2 = findViewById(R.id.viewPager2);
         indicator = findViewById(R.id.indicater);
+        ivPlayerAlbumCover = findViewById(R.id.ivPlayerAlbumCover);
+        tvPlayerTitle = findViewById(R.id.tvPlayerTitle);
+        tvPlayerArtist = findViewById(R.id.tvPlayerArtist);
+        tvCurrentTime = findViewById(R.id.tvCurrentTime);
+        tvDuration = findViewById(R.id.tvDuration);
+        seekBar = findViewById(R.id.seekBar);
+        btnNext = findViewById(R.id.btnNext);
+        btnPlayPause = findViewById(R.id.btnPlayPause);
+        btnPrev = findViewById(R.id.btnPrev);
+        drawerLayout = findViewById(R.id.drawerLayout);
+        imgDrawerMenuAlbumCover = findViewById(R.id.imgDrawerMenuAlbumCover);
+    }
+
+    public void setPlayerData(int pos) {
+        drawerLayout.closeDrawer(Gravity.LEFT);
+        index = pos;
+
+        mPlayer.stop();
+        mPlayer.reset();
+
+        musicData = musicList.get(pos);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
+
+        tvPlayerTitle.setText(musicData.getTitle());
+        tvPlayerArtist.setText(musicData.getArtist());
+        tvDuration.setText(sdf.format(Integer.parseInt(musicData.getDuration())));
+
+        adapter = new MusicAdapter(this, musicList);
+        Bitmap coverImg = adapter.getCoverImg(mainActivity, Integer.parseInt(musicData.getAlbumCover()), 400);
+        if(coverImg != null) {
+            ivPlayerAlbumCover.setImageBitmap(coverImg);
+            imgDrawerMenuAlbumCover.setImageBitmap(coverImg);
+        } else {
+            ivPlayerAlbumCover.setImageResource(R.drawable.unknown);
+            imgDrawerMenuAlbumCover.setImageResource(R.drawable.unknown);
+        }
+        Uri musicURI = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicData.getId());
+        try {
+            mPlayer.setDataSource(this, musicURI);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+
+        }
     }
 }
