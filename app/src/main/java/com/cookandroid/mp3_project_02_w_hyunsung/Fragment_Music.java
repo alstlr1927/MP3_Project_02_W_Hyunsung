@@ -71,7 +71,6 @@ public class Fragment_Music extends Fragment {
             @Override
             public void onItemClick(View v, int pos) {
                 mainActivity.setPlayerData(pos);
-//                drawerLayout.closeDrawer(Gravity.LEFT);
             }
         });
 

@@ -6,21 +6,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -55,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MusicData> musicList = new ArrayList<>();
     private int numberPage = 3;
     private int index;
+    private boolean nowPlaying = false;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -70,6 +68,68 @@ public class MainActivity extends AppCompatActivity {
 
         DBHelper = MusicDBHelper.getInstance(getApplicationContext());
         musicList = DBHelper.compareArrayList();
+
+        eventHandlerFunc();
+
+
+    }
+
+    private void eventHandlerFunc() {
+
+
+        btnPlayPause.setOnClickListener((View v) -> {
+            if(nowPlaying == true) {
+                nowPlaying = false;
+                mPlayer.pause();
+                btnPlayPause.setBackgroundResource(R.drawable.play);
+            } else {
+                nowPlaying = true;
+                mPlayer.start();
+                btnPlayPause.setBackgroundResource(R.drawable.pause);
+                setSeekBarThread();
+            }
+        });
+        btnPrev.setOnClickListener((View v) -> {
+            SimpleDateFormat sdfS = new SimpleDateFormat("ss");
+            int nowDurationForSec =  Integer.parseInt(sdfS.format(mPlayer.getCurrentPosition()));
+
+            mPlayer.stop();
+            mPlayer.reset();
+            nowPlaying =false;
+            btnPlayPause.setBackgroundResource(R.drawable.play);
+            try {
+                if(nowDurationForSec <=5) {
+                    if(index == 0)  {
+                        index = musicList.size() -1;
+                        setPlayerData(index);
+                    } else {
+                        index--;
+                        setPlayerData(index);
+                    }
+                } else {
+                    setPlayerData(index);
+                }
+            } catch (Exception e) {
+                Log.d("Prev", e.getMessage());
+            }
+        });
+        btnNext.setOnClickListener((View v) -> {
+            mPlayer.stop();
+            mPlayer.reset();
+            nowPlaying =false;
+            btnPlayPause.setBackgroundResource(R.drawable.play);
+            try {
+                if(index == musicList.size() -1) {
+                    index = 0;
+                    setPlayerData(index);
+                } else {
+                    index++;
+                    setPlayerData(index);
+                }
+            } catch (Exception e) {
+                    Log.d("Next", e.getMessage());
+            }
+        });
     }
 
     private void requestPermissionFunc() {
@@ -158,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         tvDuration.setText(sdf.format(Integer.parseInt(musicData.getDuration())));
 
         adapter = new MusicAdapter(this, musicList);
-        Bitmap coverImg = adapter.getCoverImg(mainActivity, Integer.parseInt(musicData.getAlbumCover()), 400);
+        Bitmap coverImg = adapter.getCoverImg(this, Integer.parseInt(musicData.getAlbumCover()), 400);
         if(coverImg != null) {
             ivPlayerAlbumCover.setImageBitmap(coverImg);
             imgDrawerMenuAlbumCover.setImageBitmap(coverImg);
@@ -171,8 +231,34 @@ public class MainActivity extends AppCompatActivity {
             mPlayer.setDataSource(this, musicURI);
             mPlayer.prepare();
             mPlayer.start();
+            btnPlayPause.setBackgroundResource(R.drawable.pause);
+            nowPlaying =true;
+            seekBar.setProgress(0);
+            seekBar.setMax(Integer.parseInt(musicData.getDuration()));
+            setSeekBarThread();
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
+    }
+
+    private void setSeekBarThread() {
+        Thread thread = new Thread(new Runnable() {
+            SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
+
+            @Override
+            public void run() {
+                while(mPlayer.isPlaying()) {
+                    seekBar.setProgress(mPlayer.getCurrentPosition());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvCurrentTime.setText(sdf.format(mPlayer.getCurrentPosition()));
+                        }
+                    });
+                    SystemClock.sleep(100);
+                }
+            }
+        });
+        thread.start();
     }
 }
