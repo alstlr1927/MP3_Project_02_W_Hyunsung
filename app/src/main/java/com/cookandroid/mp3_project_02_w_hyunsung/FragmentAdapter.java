@@ -34,7 +34,7 @@ public class FragmentAdapter extends FragmentStateAdapter {
         if(index ==0) {
             return Fragment_Music.newInstance(index +1);
         } else if(index ==1) {
-            return Fragment_Artist.newInstance(index +1);
+            return Fragment_Like.newInstance(index +1);
         } else {
             return Fragment_Album.newInstance(index +1);
         }

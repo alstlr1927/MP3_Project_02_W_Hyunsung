@@ -11,7 +11,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginLeft="20dp"
-        android:src="@drawable/unknown"/>
+        android:src="@drawable/pinkmoon"/>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -29,7 +29,8 @@
             android:paddingLeft="10dp"
             android:paddingBottom="2dp"
             android:maxLines="1"
-            android:ellipsize="end"/>
+            android:ellipsize="end"
+            android:textColor="#ffffff"/>
         <TextView
             android:id="@+id/item_tvArtist"
             android:layout_width="wrap_content"
@@ -38,7 +39,8 @@
             android:textSize="14sp"
             android:paddingLeft="10dp"
             android:maxLines="1"
-            android:ellipsize="end"/>
+            android:ellipsize="end"
+            android:textColor="#ffffff"/>
     </LinearLayout>
 
     <LinearLayout
@@ -46,18 +48,20 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="20dp">
 
-        <ImageView
+        <Button
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginRight="5dp"
-            app:srcCompat="@drawable/play" />
+            android:background="@drawable/play"
+            android:backgroundTint="#ffffff"/>
 
         <TextView
             android:id="@+id/item_tvDuration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="4:40"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="#ffffff"/>
     </LinearLayout>
 
 </LinearLayout>

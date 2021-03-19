@@ -29,9 +29,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
     //2. 멤버 변수를 만든다.
     private OnItemClickListener mListener;
 
-    public MusicAdapter(Context context, ArrayList<MusicData> musicData) {
-        this.musicData = musicData;
+    public MusicAdapter(Context context,ArrayList<MusicData> musicData) {
         this.context = context;
+        this.musicData = musicData;
     }
 
     @NonNull

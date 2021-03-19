@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     setPlayerData(index);
                 }
             } catch (Exception e) {
-                    Log.d("Next", e.getMessage());
+                Log.d("Next", e.getMessage());
             }
         });
     }

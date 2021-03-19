@@ -43,8 +43,8 @@ public class MusicDBHelper extends SQLiteOpenHelper {
                         "title VARCHAR(15)," +
                         "albumArt VARCHAR(15)," +
                         "duration VARCHAR(15)," +
-                        "click INTEGER," +
-                        "liked INTEGER );");
+                        "liked INTEGER," +
+                        "count INTEGER );");
 
     }
 
@@ -74,7 +74,8 @@ public class MusicDBHelper extends SQLiteOpenHelper {
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getInt(5));
+                    cursor.getInt(5),
+                    cursor.getInt(6));
 
             musicDBArrayList.add(musicData);
         }
@@ -129,7 +130,7 @@ public class MusicDBHelper extends SQLiteOpenHelper {
         try {
             for (MusicData data : arrayList) {
 
-                String query = "UPDATE musicTBL SET liked = " + data.getLiked() + " WHERE id = '" + data.getId() + "';";
+                String query = "UPDATE musicTBL SET click = " + data.getPlayCount() + ", liked = " + data.getLiked() + " WHERE id = '" + data.getId() + "';";
                 sqLiteDatabase.execSQL(query);
             }
 
@@ -172,7 +173,7 @@ public class MusicDBHelper extends SQLiteOpenHelper {
                 String albumArt = cursor.getString(cursor.getColumnIndex(data[3]));
                 String duration = cursor.getString(cursor.getColumnIndex(data[4]));
 
-                MusicData mData = new MusicData(id, artist, title, albumArt, duration, 0);
+                MusicData mData = new MusicData(id, artist, title, albumArt, duration, 0, 0);
 
                 sdCardList.add(mData);
             }
@@ -198,7 +199,8 @@ public class MusicDBHelper extends SQLiteOpenHelper {
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getInt(5));
+                    cursor.getInt(5),
+                    cursor.getInt(6));
 
             musicDBArrayList.add(musicData);
         }

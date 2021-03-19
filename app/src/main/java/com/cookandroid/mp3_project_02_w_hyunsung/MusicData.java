@@ -7,12 +7,13 @@ public class MusicData {
     private String albumCover;
     private String duration;
     private int liked;
+    private int playCount;
 
     public MusicData() {
-        this(null, null, null, null, null, 0);
+        this(null, null, null, null, null, 0, 0);
     }
 
-    public MusicData(String id, String artist, String title, String albumCover, String duration, int liked) {
+    public MusicData(String id, String artist, String title, String albumCover, String duration, int liked, int playCount) {
         super();
         this.id = id;
         this.artist = artist;
@@ -20,6 +21,7 @@ public class MusicData {
         this.albumCover = albumCover;
         this.duration = duration;
         this.liked = liked;
+        this.playCount = playCount;
     }
 
     public String getId() {
@@ -70,4 +72,24 @@ public class MusicData {
         this.liked = liked;
     }
 
+    public int getPlayCount() {
+        return playCount;
+    }
+
+    public void setPlayCount(int playCount) {
+        this.playCount = playCount;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        boolean equal = false;
+
+        if (obj instanceof MusicData) {
+            MusicData data = (MusicData) obj;
+            equal = (this.id).equals(data.getId());
+        }
+
+        return equal;
+    }
 }
