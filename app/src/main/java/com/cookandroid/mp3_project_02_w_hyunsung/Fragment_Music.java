@@ -21,7 +21,7 @@ public class Fragment_Music extends Fragment {
 
     private MainActivity mainActivity;
 
-    private ArrayList<MusicData> musicList;
+    private ArrayList<MusicData> musicList = new ArrayList<>();
 
     private RecyclerView recyclerView;
     private DrawerLayout drawerLayout;
@@ -58,7 +58,7 @@ public class Fragment_Music extends Fragment {
 
         dbHelper = MusicDBHelper.getInstance(mainActivity);
 
-        musicList = dbHelper.findMusic();
+        musicList = dbHelper.compareArrayList();
 
         adapter = new MusicAdapter(getActivity(), musicList);
 
@@ -67,13 +67,14 @@ public class Fragment_Music extends Fragment {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(linearLayoutManager);
 
+        recyclerViewListUpdate(musicList);
+
         adapter.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int pos) {
                 mainActivity.setPlayerData(pos);
             }
         });
-
 
         return view;
     }
@@ -88,8 +89,27 @@ public class Fragment_Music extends Fragment {
         super.onViewCreated(view, savedInstanceState);
     }
 
+    private void recyclerViewListUpdate(ArrayList<MusicData> arrayList){
+
+        // 어댑터에 데이터리스트 세팅
+        adapter.setMusicData(arrayList);
+
+        // recyclerView에 어댑터 세팅
+        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    public MusicAdapter getAdapter() {
+        return adapter;
+    }
+
+    public ArrayList<MusicData> getMusicList() {
+        return musicList;
+    }
+
     @Override
     public void onStop() {
         super.onStop();
+        dbHelper.updateMusicDataToDB(musicList);
     }
 }
