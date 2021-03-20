@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -41,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
     private MainActivity mainActivity;
     private MusicDBHelper DBHelper;
     private MusicData musicData;
+    private MusicData musicData_search;
     private MusicAdapter adapter;
+    private Fragment_Search fragment_search = new Fragment_Search();
 
     private DrawerLayout drawerLayout;
     private ImageView ivPlayerAlbumCover, imgDrawerMenuAlbumCover;
@@ -111,13 +114,13 @@ public class MainActivity extends AppCompatActivity {
                 if(nowDurationForSec <=5) {
                     if(index == 0)  {
                         index = musicList.size() -1;
-                        setPlayerData(index, true);
+                        setPlayerData(index, 1);
                     } else {
                         index--;
-                        setPlayerData(index, true);
+                        setPlayerData(index, 1);
                     }
                 } else {
-                    setPlayerData(index, true);
+                    setPlayerData(index, 1);
                 }
             } catch (Exception e) {
                 Log.d("Prev", e.getMessage());
@@ -131,10 +134,10 @@ public class MainActivity extends AppCompatActivity {
             try {
                 if(index == musicList.size() -1) {
                     index = 0;
-                    setPlayerData(index, true);
+                    setPlayerData(index, 1);
                 } else {
                     index++;
-                    setPlayerData(index, true);
+                    setPlayerData(index, 1);
                 }
             } catch (Exception e) {
                 Log.d("Next", e.getMessage());
@@ -159,17 +162,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         btnLike.setOnClickListener((View v) -> {
-            if(musicData.getLiked() == 1){
-                musicData.setLiked(0);
-                musicList_Like.remove(musicData);
-                btnLike.setBackgroundResource(R.drawable.ic_outline_brightness_2_24);
-            }else{
-                musicData.setLiked(1);
-                musicList_Like.add(musicData);
-                btnLike.setBackgroundResource(R.drawable.ic_baseline_brightness_2_24);
+            try {
+                if(musicData.getLiked() == 1){
+                    musicData.setLiked(0);
+                    musicList_Like.remove(musicData);
+                    btnLike.setBackgroundResource(R.drawable.outline_moon);
+                }else{
+                    musicData.setLiked(1);
+                    musicList_Like.add(musicData);
+                    btnLike.setBackgroundResource(R.drawable.baseline_moon);
+                }
+                DBHelper.updateMusicDataToDB(musicList);
+                adapter.notifyDataSetChanged();
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "노래를 골라주세요", Toast.LENGTH_SHORT).show();
             }
-            DBHelper.updateMusicDataToDB(musicList);
-            adapter.notifyDataSetChanged();
+
         });
     }
 
@@ -255,7 +263,11 @@ public class MainActivity extends AppCompatActivity {
         btnLike = findViewById(R.id.btnLike);
     }
 
-    public void setPlayerData(int pos, boolean flag) {
+    public void setMusicData_search(MusicData musicData_search) {
+        this.musicData_search = musicData_search;
+    }
+
+    public void setPlayerData(int pos, int func) {
         drawerLayout.closeDrawer(Gravity.LEFT);
 
         index = pos;
@@ -263,11 +275,15 @@ public class MainActivity extends AppCompatActivity {
         mPlayer.stop();
         mPlayer.reset();
 
-        if(flag) {
+        if(func ==1) {
             musicData = musicList.get(pos);
-        } else {
+        } else if(func ==2) {
             musicData = DBHelper.saveLikeList().get(pos);
+        } else if(func ==3) {
+            musicData = musicData_search;
         }
+
+
 
         SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
 
@@ -276,9 +292,9 @@ public class MainActivity extends AppCompatActivity {
         tvDuration.setText(sdf.format(Integer.parseInt(musicData.getDuration())));
 
         if(musicData.getLiked() == 1) {
-            btnLike.setBackgroundResource(R.drawable.ic_baseline_brightness_2_24);
+            btnLike.setBackgroundResource(R.drawable.baseline_moon);
         } else {
-            btnLike.setBackgroundResource(R.drawable.ic_outline_brightness_2_24);
+            btnLike.setBackgroundResource(R.drawable.outline_moon);
         }
 
         adapter = new MusicAdapter(this, musicList);

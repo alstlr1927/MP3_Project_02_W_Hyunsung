@@ -1,5 +1,8 @@
 package com.cookandroid.mp3_project_02_w_hyunsung;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 public class MusicData {
     private String id;
     private String artist;
@@ -22,6 +25,16 @@ public class MusicData {
         this.duration = duration;
         this.playCount = playCount;
         this.liked = liked;
+    }
+
+    protected MusicData(Parcel in) {
+        id = in.readString();
+        artist = in.readString();
+        title = in.readString();
+        albumCover = in.readString();
+        duration = in.readString();
+        liked = in.readInt();
+        playCount = in.readInt();
     }
 
     public String getId() {
@@ -92,4 +105,5 @@ public class MusicData {
 
         return equal;
     }
+
 }

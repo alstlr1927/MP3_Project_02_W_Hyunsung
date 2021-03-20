@@ -61,7 +61,6 @@ public class Fragment_Like extends Fragment {
 
         layoutManager_like = new LinearLayoutManager(getActivity());
 
-        recyclerViewLike.setAdapter(adapter_like);
         recyclerViewLike.setLayoutManager(layoutManager_like);
 
         likeRecyclerViewListUpdate(getMusicList_like());
@@ -69,7 +68,7 @@ public class Fragment_Like extends Fragment {
         adapter_like.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int pos) {
-                mainActivity.setPlayerData(pos, false);
+                mainActivity.setPlayerData(pos, 2);
             }
         });
 

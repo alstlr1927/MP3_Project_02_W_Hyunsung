@@ -160,6 +160,8 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.CustomViewHo
         //1. 추상화 메소드
         void onItemClick(View v, int pos);
     }
+
+
     //3.내부 인터페이스 멤버변수에 대한 setters만든다.
 
     public void setOnItemClickListener(OnItemClickListener Listener) {

@@ -57,7 +57,7 @@
             android:layout_marginLeft="347dp"
             android:layout_marginTop="-400dp"
             android:layout_marginRight="14dp"
-            android:background="@drawable/ic_outline_brightness_2_24" />
+            android:background="@drawable/outline_moon" />
 
         <LinearLayout
             android:id="@+id/linear1"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:progressBackgroundTint="#ffffff"
-                android:backgroundTint="#FDFF7A"
+                android:backgroundTint="#F7D961"
                 android:thumb="@drawable/ic_baseline_star_24"/>
 
             <TextView
@@ -109,7 +109,7 @@
                 android:layout_height="30dp"
                 android:layout_marginRight="40dp"
                 android:background="@drawable/prev"
-                android:backgroundTint="#FFFB0F" />
+                android:backgroundTint="#F7D961" />
 
             <Button
                 android:id="@+id/btnPlayPause"
@@ -117,7 +117,7 @@
                 android:layout_height="50dp"
                 android:layout_gravity="center"
                 android:background="@drawable/play"
-                android:backgroundTint="#FFFB0F"/>
+                android:backgroundTint="#F7D961"/>
 
             <Button
                 android:id="@+id/btnNext"
@@ -125,7 +125,7 @@
                 android:layout_height="30dp"
                 android:layout_marginLeft="40dp"
                 android:background="@drawable/next"
-                android:backgroundTint="#FFFB0F"/>
+                android:backgroundTint="#F7D961"/>
 
         </LinearLayout>
     </RelativeLayout>

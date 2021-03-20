@@ -64,7 +64,6 @@ public class Fragment_Music extends Fragment {
 
         linearLayoutManager = new LinearLayoutManager(getActivity());
 
-        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(linearLayoutManager);
 
         recyclerViewListUpdate(musicList);
@@ -72,7 +71,7 @@ public class Fragment_Music extends Fragment {
         adapter.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int pos) {
-                mainActivity.setPlayerData(pos, true);
+                mainActivity.setPlayerData(pos, 1);
             }
         });
 
