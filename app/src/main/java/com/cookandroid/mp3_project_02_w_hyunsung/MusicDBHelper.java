@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
@@ -81,7 +82,6 @@ public class MusicDBHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        sqLiteDatabase.close();
 
         return musicDBArrayList;
     }
@@ -90,7 +90,7 @@ public class MusicDBHelper extends SQLiteOpenHelper {
     public boolean insertMusicDataToDB(ArrayList<MusicData> arrayList) {
 
         boolean returnValue = false;
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 
         try {
             for (MusicData data : arrayList) {
@@ -99,15 +99,9 @@ public class MusicDBHelper extends SQLiteOpenHelper {
                 ArrayList<MusicData> dbList = selectMusicTbl();
 
                 // db에 속해있는 요소인지 확인
-                if (!dbList.contains(data)) {
+                if (dbList.contains(data) == false) {
 
-                    String query = "insert into musicTBL values("
-                            + "'" + data.getId() + "',"
-                            + "'" + data.getArtist() + "',"
-                            + "'" + data.getTitle() + "',"
-                            + "'" + data.getAlbumCover() + "',"
-                            + "'" + data.getDuration() + "',"
-                            + 0 + "," + 0 + ");";
+                    String query = "INSERT INTO musicTBL VALUES('" + data.getId() + "','" + data.getArtist() + "','" + data.getTitle() + "','" + data.getAlbumCover() + "','" + data.getDuration() + "'," + 0 + "," + 0 + ");";
 
                     // 쿼리문 작성해서 넘김
                     // 예외발생시 SQLException
@@ -117,6 +111,7 @@ public class MusicDBHelper extends SQLiteOpenHelper {
             returnValue = true;
         } catch (Exception e) {
             returnValue = false;
+            Log.e("list", e.getMessage());
         }
 
         return returnValue;
@@ -206,7 +201,6 @@ public class MusicDBHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        sqLiteDatabase.close();
 
         return musicDBArrayList;
     }

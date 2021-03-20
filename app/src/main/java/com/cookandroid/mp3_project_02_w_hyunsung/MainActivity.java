@@ -74,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
         musicList = DBHelper.compareArrayList();
         boolean flg = DBHelper.insertMusicDataToDB(musicList);
         if(flg) {
-            Log.d("list", "success");
+            Log.d("list", "success" +musicList.size());
         } else {
-            Log.d("list", "Fail");
+            Log.d("list", "Fail" +musicList.size());
         }
 
 
@@ -164,11 +164,13 @@ public class MainActivity extends AppCompatActivity {
                 like = false;
                 musicData.setLiked(0);
                 musicList_Like.remove(musicData);
+                adapter.notifyDataSetChanged();
                 btnLike.setBackgroundResource(R.drawable.ic_outline_brightness_2_24);
             }else{
                 like = true;
                 musicData.setLiked(1);
                 musicList_Like.add(musicData);
+                adapter.notifyDataSetChanged();
                 btnLike.setBackgroundResource(R.drawable.ic_baseline_brightness_2_24);
             }
             //musicData를 frament_like로 이동
