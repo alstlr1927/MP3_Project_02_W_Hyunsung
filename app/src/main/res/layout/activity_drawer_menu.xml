@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_gravity="bottom"
-            app:ci_drawable="@drawable/black_raius"/>
+            app:ci_drawable="@drawable/white_radius"/>
     </FrameLayout>
 
 </LinearLayout>

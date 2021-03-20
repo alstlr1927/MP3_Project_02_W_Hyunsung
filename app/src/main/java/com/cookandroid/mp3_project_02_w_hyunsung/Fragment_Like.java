@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Fragment_Like extends Fragment {
@@ -55,16 +57,21 @@ public class Fragment_Like extends Fragment {
 
         dbHelper = MusicDBHelper.getInstance(mainActivity);
 
-        musicList_like = dbHelper.saveLikeList();
-
-        adapter_like = new MusicAdapter(getActivity(), musicList_like);
+        adapter_like = new MusicAdapter(getActivity());
 
         layoutManager_like = new LinearLayoutManager(getActivity());
 
         recyclerViewLike.setAdapter(adapter_like);
         recyclerViewLike.setLayoutManager(layoutManager_like);
 
-        likeRecyclerViewListUpdate(musicList_like);
+        likeRecyclerViewListUpdate(getMusicList_like());
+
+        adapter_like.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int pos) {
+                mainActivity.setPlayerData(pos, false);
+            }
+        });
 
         return view;
     }
@@ -86,11 +93,10 @@ public class Fragment_Like extends Fragment {
         // recyclerView에 어댑터 세팅
         recyclerViewLike.setAdapter(adapter_like);
         adapter_like.notifyDataSetChanged();
-
-
     }
 
     public ArrayList<MusicData> getMusicList_like() {
+        musicList_like = dbHelper.saveLikeList();
         return musicList_like;
     }
 

@@ -9,10 +9,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class Fragment_Album extends Fragment {
+public class Fragment_Search extends Fragment {
 
-    public static Fragment_Album newInstance(int fragNumber) {
-        Fragment_Album fragment_album = new Fragment_Album();
+    public static Fragment_Search newInstance(int fragNumber) {
+        Fragment_Search fragment_album = new Fragment_Search();
         Bundle bundle = new Bundle();
         bundle.putInt("fragNumber", fragNumber);
         fragment_album.setArguments(bundle);
@@ -27,7 +27,7 @@ public class Fragment_Album extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_album, container, false);
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
         return view;
     }
 

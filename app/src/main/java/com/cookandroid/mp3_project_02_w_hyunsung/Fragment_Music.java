@@ -72,7 +72,7 @@ public class Fragment_Music extends Fragment {
         adapter.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int pos) {
-                mainActivity.setPlayerData(pos);
+                mainActivity.setPlayerData(pos, true);
             }
         });
 
@@ -110,6 +110,5 @@ public class Fragment_Music extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        dbHelper.updateMusicDataToDB(musicList);
     }
 }

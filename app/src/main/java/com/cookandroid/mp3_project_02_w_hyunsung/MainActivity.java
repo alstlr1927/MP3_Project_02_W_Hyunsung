@@ -24,7 +24,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -72,13 +71,13 @@ public class MainActivity extends AppCompatActivity {
 
         DBHelper = MusicDBHelper.getInstance(MainActivity.this);
         musicList = DBHelper.compareArrayList();
+        musicList_Like = DBHelper.saveLikeList();
         boolean flg = DBHelper.insertMusicDataToDB(musicList);
         if(flg) {
             Log.d("list", "success" +musicList.size());
         } else {
             Log.d("list", "Fail" +musicList.size());
         }
-
 
         eventHandlerFunc();
 
@@ -112,13 +111,13 @@ public class MainActivity extends AppCompatActivity {
                 if(nowDurationForSec <=5) {
                     if(index == 0)  {
                         index = musicList.size() -1;
-                        setPlayerData(index);
+                        setPlayerData(index, true);
                     } else {
                         index--;
-                        setPlayerData(index);
+                        setPlayerData(index, true);
                     }
                 } else {
-                    setPlayerData(index);
+                    setPlayerData(index, true);
                 }
             } catch (Exception e) {
                 Log.d("Prev", e.getMessage());
@@ -132,10 +131,10 @@ public class MainActivity extends AppCompatActivity {
             try {
                 if(index == musicList.size() -1) {
                     index = 0;
-                    setPlayerData(index);
+                    setPlayerData(index, true);
                 } else {
                     index++;
-                    setPlayerData(index);
+                    setPlayerData(index, true);
                 }
             } catch (Exception e) {
                 Log.d("Next", e.getMessage());
@@ -160,21 +159,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         btnLike.setOnClickListener((View v) -> {
-            if(like == true){
-                like = false;
+            if(musicData.getLiked() == 1){
                 musicData.setLiked(0);
                 musicList_Like.remove(musicData);
-                adapter.notifyDataSetChanged();
                 btnLike.setBackgroundResource(R.drawable.ic_outline_brightness_2_24);
             }else{
-                like = true;
                 musicData.setLiked(1);
                 musicList_Like.add(musicData);
-                adapter.notifyDataSetChanged();
                 btnLike.setBackgroundResource(R.drawable.ic_baseline_brightness_2_24);
             }
-            //musicData를 frament_like로 이동
-            //musiclist_like insert시키기
+            DBHelper.updateMusicDataToDB(musicList);
+            adapter.notifyDataSetChanged();
         });
     }
 
@@ -184,8 +179,17 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.READ_EXTERNAL_STORAGE}, MODE_PRIVATE);
     }
 
+    @Override
+    public void onBackPressed() {
+        if(viewPager2.getCurrentItem() == 0) {
+            super.onBackPressed();
+        } else {
+            viewPager2.setCurrentItem(viewPager2.getCurrentItem() -1);
+        }
+    }
+
     private void setViewPager() {
-        pagerAdapter = new FragmentAdapter(this, numberPage);
+        pagerAdapter = new ViewPager2Adapter(this, numberPage);
         viewPager2.setAdapter(pagerAdapter);
 
         indicator.setViewPager(viewPager2);
@@ -230,6 +234,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
     }
 
     private void findViewByIdFunc() {
@@ -249,14 +255,19 @@ public class MainActivity extends AppCompatActivity {
         btnLike = findViewById(R.id.btnLike);
     }
 
-    public void setPlayerData(int pos) {
+    public void setPlayerData(int pos, boolean flag) {
         drawerLayout.closeDrawer(Gravity.LEFT);
+
         index = pos;
 
         mPlayer.stop();
         mPlayer.reset();
 
-        musicData = musicList.get(pos);
+        if(flag) {
+            musicData = musicList.get(pos);
+        } else {
+            musicData = DBHelper.saveLikeList().get(pos);
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
 
@@ -264,14 +275,20 @@ public class MainActivity extends AppCompatActivity {
         tvPlayerArtist.setText(musicData.getArtist());
         tvDuration.setText(sdf.format(Integer.parseInt(musicData.getDuration())));
 
+        if(musicData.getLiked() == 1) {
+            btnLike.setBackgroundResource(R.drawable.ic_baseline_brightness_2_24);
+        } else {
+            btnLike.setBackgroundResource(R.drawable.ic_outline_brightness_2_24);
+        }
+
         adapter = new MusicAdapter(this, musicList);
         Bitmap coverImg = adapter.getCoverImg(this, Integer.parseInt(musicData.getAlbumCover()), 400);
         if(coverImg != null) {
             ivPlayerAlbumCover.setImageBitmap(coverImg);
             imgDrawerMenuAlbumCover.setImageBitmap(coverImg);
         } else {
-            ivPlayerAlbumCover.setImageResource(R.drawable.unknown);
-            imgDrawerMenuAlbumCover.setImageResource(R.drawable.unknown);
+            ivPlayerAlbumCover.setImageResource(R.drawable.pinkmoon);
+            imgDrawerMenuAlbumCover.setImageResource(R.drawable.pinkmoon);
         }
         Uri musicURI = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicData.getId());
         try {
@@ -315,5 +332,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         thread.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 }
