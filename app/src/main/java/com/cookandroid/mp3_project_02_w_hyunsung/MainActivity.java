@@ -10,17 +10,28 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,69 +40,68 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Random;
 
 import me.relex.circleindicator.CircleIndicator3;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static Random random = new Random();
+    public static final int LIST = 1;
+    public static final int LIKE = 2;
+    public static final int SEARCH = 3;
 
     private ViewPager2 viewPager2;
     private CircleIndicator3 indicator;
     private FragmentStateAdapter pagerAdapter;
     private MediaPlayer mPlayer = new MediaPlayer();
 
-    private MainActivity mainActivity;
     private MusicDBHelper DBHelper;
     private MusicData musicData;
     private MusicData musicData_search;
     private MusicAdapter adapter;
-    private Fragment_Search fragment_search = new Fragment_Search();
 
     private DrawerLayout drawerLayout;
     private ImageView ivPlayerAlbumCover, imgDrawerMenuAlbumCover;
     private TextView tvPlayerTitle, tvPlayerArtist, tvCurrentTime, tvDuration;
     private SeekBar seekBar;
-    private Button btnPrev, btnPlayPause, btnNext, btnLike;
+    private Button btnPrev, btnPlayPause, btnNext, btnLike, btnShuffle;
+    private FrameLayout frameImg;
 
     private ArrayList<MusicData> musicList = new ArrayList<>();
     private ArrayList<MusicData> musicList_Like = new ArrayList<>();
 
-    private int numberPage = 3;
+    private int numberPage = 3;     //뷰페이저 갯수
     private int index;
-    private boolean nowPlaying = false;
-    private boolean like = false;
+    private boolean nowPlaying = false;     //재생 중 확인
+    private boolean shuffle = false;         //램덤재생 확인
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //로딩화면 호출
+        startLoadingActivity();
+        //외부 접근 허용
         requestPermissionFunc();
-
+        //id 연결
         findViewByIdFunc();
-
-        setViewPager();
-
-        DBHelper = MusicDBHelper.getInstance(MainActivity.this);
-        musicList = DBHelper.compareArrayList();
-        musicList_Like = DBHelper.saveLikeList();
-        boolean flg = DBHelper.insertMusicDataToDB(musicList);
-        if(flg) {
-            Log.d("list", "success" +musicList.size());
-        } else {
-            Log.d("list", "Fail" +musicList.size());
-        }
-
+        //ViewPager2 세팅
+        setViewPager2();
+        //이벤트 적용
         eventHandlerFunc();
-
-
     }
 
+    private void startLoadingActivity() {
+        Intent intent = new Intent(this, LoadingActivity.class);
+        startActivity(intent);
+    }
+
+    //버튼 클릭이벤트 처리
     private void eventHandlerFunc() {
-
-
         btnPlayPause.setOnClickListener((View v) -> {
-            if(nowPlaying == true) {
+            if (nowPlaying == true) {
                 nowPlaying = false;
                 mPlayer.pause();
                 btnPlayPause.setBackgroundResource(R.drawable.play);
@@ -104,23 +114,30 @@ public class MainActivity extends AppCompatActivity {
         });
         btnPrev.setOnClickListener((View v) -> {
             SimpleDateFormat sdfS = new SimpleDateFormat("ss");
-            int nowDurationForSec =  Integer.parseInt(sdfS.format(mPlayer.getCurrentPosition()));
-
+            int nowDurationForSec = Integer.parseInt(sdfS.format(mPlayer.getCurrentPosition()));
             mPlayer.stop();
             mPlayer.reset();
-            nowPlaying =false;
+            nowPlaying = false;
             btnPlayPause.setBackgroundResource(R.drawable.play);
             try {
-                if(nowDurationForSec <=5) {
-                    if(index == 0)  {
-                        index = musicList.size() -1;
-                        setPlayerData(index, 1);
-                    } else {
+                if (shuffle == false) {
+                    if (nowDurationForSec <= 5) {
+                        if (index == 0) {
+                            index = musicList.size();
+                            setPlayerData(index, LIST);
+                        }
                         index--;
-                        setPlayerData(index, 1);
+                        setPlayerData(index, LIST);
+                    } else {
+                        setPlayerData(index, LIST);
                     }
                 } else {
-                    setPlayerData(index, 1);
+                    if (nowDurationForSec <= 5) {
+                        index = random.nextInt(musicList.size());
+                        setPlayerData(index, LIST);
+                    } else {
+                        setPlayerData(index, LIST);
+                    }
                 }
             } catch (Exception e) {
                 Log.d("Prev", e.getMessage());
@@ -129,74 +146,90 @@ public class MainActivity extends AppCompatActivity {
         btnNext.setOnClickListener((View v) -> {
             mPlayer.stop();
             mPlayer.reset();
-            nowPlaying =false;
+            nowPlaying = false;
             btnPlayPause.setBackgroundResource(R.drawable.play);
             try {
-                if(index == musicList.size() -1) {
-                    index = 0;
-                    setPlayerData(index, 1);
-                } else {
+                if (shuffle == false) {
+                    if (index == musicList.size() - 1) {
+                        index = -1;
+                        setPlayerData(index, LIST);
+                    }
                     index++;
                     setPlayerData(index, 1);
+                } else {
+                    index = random.nextInt(musicList.size());
+                    setPlayerData(index, LIST);
                 }
             } catch (Exception e) {
                 Log.d("Next", e.getMessage());
             }
         });
+        //시크바 변경
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean startTouch) {
-                if(startTouch == true) {
+                if (startTouch == true) {
                     mPlayer.seekTo(progress);
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
         btnLike.setOnClickListener((View v) -> {
             try {
-                if(musicData.getLiked() == 1){
+                if (musicData.getLiked() == 1) {
                     musicData.setLiked(0);
                     musicList_Like.remove(musicData);
                     btnLike.setBackgroundResource(R.drawable.outline_moon);
-                }else{
+                } else {
                     musicData.setLiked(1);
                     musicList_Like.add(musicData);
                     btnLike.setBackgroundResource(R.drawable.baseline_moon);
                 }
                 DBHelper.updateMusicDataToDB(musicList);
-                adapter.notifyDataSetChanged();
             } catch (Exception e) {
                 Toast.makeText(getApplicationContext(), "노래를 골라주세요", Toast.LENGTH_SHORT).show();
             }
-
+        });
+        ivPlayerAlbumCover.setOnClickListener((View v) -> {
+            ObjectAnimator animator = ObjectAnimator.ofFloat(ivPlayerAlbumCover, "rotationY", 0, 360);
+            animator.setDuration(1000);
+            animator.start();
+        });
+        btnShuffle.setOnClickListener((View v) -> {
+            if (shuffle == false) {
+                shuffle = true;
+                btnShuffle.setBackgroundResource(R.drawable.shuffle_yellow);
+            } else {
+                shuffle = false;
+                btnShuffle.setBackgroundResource(R.drawable.shuffle_white);
+            }
         });
     }
 
     private void requestPermissionFunc() {
         ActivityCompat.requestPermissions(this,
-                new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE}, MODE_PRIVATE);
     }
 
+    //백버튼 터치시 뷰페이저 넘김
     @Override
     public void onBackPressed() {
-        if(viewPager2.getCurrentItem() == 0) {
+        if (viewPager2.getCurrentItem() == 0) {
             super.onBackPressed();
         } else {
-            viewPager2.setCurrentItem(viewPager2.getCurrentItem() -1);
+            viewPager2.setCurrentItem(viewPager2.getCurrentItem() - 1);
         }
     }
 
-    private void setViewPager() {
+    private void setViewPager2() {
         pagerAdapter = new ViewPager2Adapter(this, numberPage);
         viewPager2.setAdapter(pagerAdapter);
 
@@ -212,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-                if(positionOffsetPixels == 0) {
+                if (positionOffsetPixels == 0) {
                     viewPager2.setCurrentItem(position);
                 }
             }
@@ -226,13 +259,12 @@ public class MainActivity extends AppCompatActivity {
 
         final float pageMargin = getResources().getDimensionPixelOffset(R.dimen.pageMargin);
         final float pageOffset = getResources().getDimensionPixelOffset(R.dimen.offset);
-
         viewPager2.setPageTransformer(new ViewPager2.PageTransformer() {
             @Override
             public void transformPage(@NonNull View page, float position) {
-                float myOffset = position * - (2 * pageOffset + pageMargin);
-                if(viewPager2.getOrientation() == ViewPager2.ORIENTATION_HORIZONTAL) {
-                    if(ViewCompat.getLayoutDirection(viewPager2) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+                float myOffset = position * -(2 * pageOffset + pageMargin);
+                if (viewPager2.getOrientation() == ViewPager2.ORIENTATION_HORIZONTAL) {
+                    if (ViewCompat.getLayoutDirection(viewPager2) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                         page.setTranslationX(-myOffset);
                     } else {
                         page.setTranslationX(myOffset);
@@ -242,8 +274,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
 
     private void findViewByIdFunc() {
@@ -261,66 +291,79 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawerLayout);
         imgDrawerMenuAlbumCover = findViewById(R.id.imgDrawerMenuAlbumCover);
         btnLike = findViewById(R.id.btnLike);
+        frameImg = findViewById(R.id.frameImg);
+        btnShuffle = findViewById(R.id.btnShuffle);
+
+        //DB Helper 설정 && 뮤직 리스트 꺼내오기
+        DBHelper = MusicDBHelper.getInstance(MainActivity.this);
+        musicList = DBHelper.compareArrayList();
+        musicList_Like = DBHelper.saveLikeList();
+        //DB에 뮤직 리스트 insert
+        DBHelper.insertMusicDataToDB(musicList);
     }
 
     public void setMusicData_search(MusicData musicData_search) {
         this.musicData_search = musicData_search;
     }
 
+    //재생화면 처리
     public void setPlayerData(int pos, int func) {
         drawerLayout.closeDrawer(Gravity.LEFT);
-
         index = pos;
-
         mPlayer.stop();
         mPlayer.reset();
 
-        if(func ==1) {
+
+        if (func == LIST) {
             musicData = musicList.get(pos);
-        } else if(func ==2) {
+        } else if (func == LIKE) {
             musicData = DBHelper.saveLikeList().get(pos);
-        } else if(func ==3) {
+        } else if (func == SEARCH) {
             musicData = musicData_search;
         }
 
-
-
         SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
-
         tvPlayerTitle.setText(musicData.getTitle());
         tvPlayerArtist.setText(musicData.getArtist());
         tvDuration.setText(sdf.format(Integer.parseInt(musicData.getDuration())));
 
-        if(musicData.getLiked() == 1) {
+        if (musicData.getLiked() == 1) {
             btnLike.setBackgroundResource(R.drawable.baseline_moon);
         } else {
             btnLike.setBackgroundResource(R.drawable.outline_moon);
         }
 
+        if (shuffle == true) {
+            btnShuffle.setBackgroundResource(R.drawable.shuffle_yellow);
+        } else {
+            btnShuffle.setBackgroundResource(R.drawable.shuffle_white);
+        }
+        //recycler adapter
         adapter = new MusicAdapter(this, musicList);
+        // 앨범 커버 이미지 세팅
         Bitmap coverImg = adapter.getCoverImg(this, Integer.parseInt(musicData.getAlbumCover()), 400);
-        if(coverImg != null) {
+        if (coverImg != null) {
             ivPlayerAlbumCover.setImageBitmap(coverImg);
             imgDrawerMenuAlbumCover.setImageBitmap(coverImg);
         } else {
-            ivPlayerAlbumCover.setImageResource(R.drawable.pinkmoon);
-            imgDrawerMenuAlbumCover.setImageResource(R.drawable.pinkmoon);
+            ivPlayerAlbumCover.setImageResource(R.drawable.moon);
+            imgDrawerMenuAlbumCover.setImageResource(R.drawable.moon);
         }
+        //음악 재생
         Uri musicURI = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicData.getId());
         try {
             mPlayer.setDataSource(this, musicURI);
             mPlayer.prepare();
             mPlayer.start();
             btnPlayPause.setBackgroundResource(R.drawable.pause);
-            nowPlaying =true;
+            nowPlaying = true;
             seekBar.setProgress(0);
             seekBar.setMax(Integer.parseInt(musicData.getDuration()));
             setSeekBarThread();
-
+            //재생완료 리스너
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
-                    musicData.setPlayCount(musicData.getPlayCount() + 1);
                     btnNext.callOnClick();
                 }
             });
@@ -329,13 +372,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //시크바 스레드에 관한 함수
     private void setSeekBarThread() {
         Thread thread = new Thread(new Runnable() {
             SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
 
             @Override
             public void run() {
-                while(mPlayer.isPlaying()) {
+                while (mPlayer.isPlaying()) {
                     seekBar.setProgress(mPlayer.getCurrentPosition());
                     runOnUiThread(new Runnable() {
                         @Override

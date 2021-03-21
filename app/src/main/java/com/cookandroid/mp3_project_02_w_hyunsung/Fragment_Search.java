@@ -42,9 +42,9 @@ public class Fragment_Search extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        mainActivity = (MainActivity)getActivity();
-        if(context instanceof MainActivity) {
-            this.mainActivity2 = (MainActivity)context;
+        mainActivity = (MainActivity) getActivity();
+        if (context instanceof MainActivity) {
+            this.mainActivity2 = (MainActivity) context;
         }
     }
 
@@ -57,11 +57,11 @@ public class Fragment_Search extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
-
+        //DB Helper 인스턴스
         dbHelper = MusicDBHelper.getInstance(getActivity());
-
+        //id 설정
         findViewByIdFunc(view);
-
+        //이벤트 설정
         eventHandlerFunc();
 
         return view;
@@ -69,21 +69,24 @@ public class Fragment_Search extends Fragment {
 
     private void eventHandlerFunc() {
         btnSearch.setOnClickListener((View v) -> {
+            //select query 문으로 검색결과 ArrayList 에 담음
             searchList = dbHelper.searchMusicTbl(edtSearch.getText().toString());
+            //어댑터 설정
             adapter_search = new MusicAdapter(getContext());
-
+            //레이아웃 매니저 설정
             LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-
+            //어댑터에 검색결과 삽입
             adapter_search.setMusicData(searchList);
-
+            //리사이클러뷰에 어댑터 && 매니저 세팅
             recyclerViewSearch.setAdapter(adapter_search);
             recyclerViewSearch.setLayoutManager(layoutManager);
-
+            //검색결과에 관한 클릭 이벤트
             adapter_search.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(View v, int pos) {
+                    //검색 음악 데이터 객체 전송
                     mainActivity.setMusicData_search(searchList.get(pos));
-                    mainActivity.setPlayerData(pos, 3);
+                    mainActivity.setPlayerData(pos, MainActivity.SEARCH);
                 }
             });
         });
@@ -95,10 +98,6 @@ public class Fragment_Search extends Fragment {
         btnSearch = view.findViewById(R.id.btnSearch);
     }
 
-    public ArrayList<MusicData> getSearchList() {
-        return searchList;
-    }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -108,9 +107,4 @@ public class Fragment_Search extends Fragment {
     public void onStop() {
         super.onStop();
     }
-
-    public interface OnApplySelectedListener {
-        void searchMusicData(ArrayList<MusicData> musicList);
-    }
-
 }

@@ -19,12 +19,12 @@ public class ViewPager2Adapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         int index = position % count;
 
-        if(index ==1) {
-            return Fragment_Music.newInstance(index +1);
-        } else if(index ==2) {
-            return Fragment_Like.newInstance(index +1);
+        if (index == 1) {
+            return Fragment_Music.newInstance(index + 1);
+        } else if (index == 2) {
+            return Fragment_Like.newInstance(index + 1);
         } else {
-            return Fragment_Search.newInstance(index +1);
+            return Fragment_Search.newInstance(index + 1);
         }
     }
 

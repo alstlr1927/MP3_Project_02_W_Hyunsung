@@ -1,8 +1,5 @@
 package com.cookandroid.mp3_project_02_w_hyunsung;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 public class MusicData {
     private String id;
     private String artist;
@@ -11,10 +8,6 @@ public class MusicData {
     private String duration;
     private int liked;
     private int playCount;
-
-    public MusicData() {
-        this(null, null, null, null, null, 0, 0);
-    }
 
     public MusicData(String id, String artist, String title, String albumCover, String duration, int playCount, int liked) {
         super();
@@ -25,16 +18,6 @@ public class MusicData {
         this.duration = duration;
         this.playCount = playCount;
         this.liked = liked;
-    }
-
-    protected MusicData(Parcel in) {
-        id = in.readString();
-        artist = in.readString();
-        title = in.readString();
-        albumCover = in.readString();
-        duration = in.readString();
-        liked = in.readInt();
-        playCount = in.readInt();
     }
 
     public String getId() {
@@ -95,14 +78,11 @@ public class MusicData {
 
     @Override
     public boolean equals(Object obj) {
-
         boolean equal = false;
-
         if (obj instanceof MusicData) {
             MusicData data = (MusicData) obj;
             equal = (this.id).equals(data.getId());
         }
-
         return equal;
     }
 

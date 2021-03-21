@@ -18,22 +18,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="15dp"
+                android:backgroundTint="#ffffff"
                 android:ems="10"
-                android:hint="가수 또는 곡명"
-                android:textColorHint="#D9C5FB"
-                android:textColor="#D9C5FB"
-                android:backgroundTint="#D9C5FB"/>
+                android:hint="곡명을 입력해주세요."
+                android:textColor="#ffffff"
+                android:textColorHint="#ffffff" />
+
             <Button
                 android:id="@+id/btnSearch"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginLeft="2dp"
-                android:background="@drawable/ic_baseline_search_24"/>
+                android:background="@drawable/ic_baseline_search_24" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewSearch"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </LinearLayout>
 </FrameLayout>

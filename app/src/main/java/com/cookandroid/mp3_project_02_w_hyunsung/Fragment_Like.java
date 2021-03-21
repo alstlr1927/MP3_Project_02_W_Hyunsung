@@ -20,7 +20,6 @@ import java.util.ArrayList;
 public class Fragment_Like extends Fragment {
 
     private MainActivity mainActivity;
-
     private LinearLayoutManager layoutManager_like;
     private MusicAdapter adapter_like;
     private MusicDBHelper dbHelper;
@@ -40,7 +39,7 @@ public class Fragment_Like extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        mainActivity = (MainActivity)getActivity();
+        mainActivity = (MainActivity) getActivity();
     }
 
     @Override
@@ -55,36 +54,40 @@ public class Fragment_Like extends Fragment {
 
         findViewByIdFunc(view);
 
-        dbHelper = MusicDBHelper.getInstance(mainActivity);
-
-        adapter_like = new MusicAdapter(getActivity());
-
-        layoutManager_like = new LinearLayoutManager(getActivity());
-
-        recyclerViewLike.setLayoutManager(layoutManager_like);
-
-        likeRecyclerViewListUpdate(getMusicList_like());
-
-        adapter_like.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View v, int pos) {
-                mainActivity.setPlayerData(pos, 2);
-            }
-        });
+        setAdapterLayoutManager();
 
         return view;
     }
 
+    private void eventHandlerFunc() {
+        //리사이클러뷰 클릭 이벤트
+        adapter_like.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int pos) {
+                mainActivity.setPlayerData(pos, MainActivity.LIKE);
+            }
+        });
+    }
+
+    private void setAdapterLayoutManager() {
+        //DB Helper 인스턴스
+        dbHelper = MusicDBHelper.getInstance(mainActivity);
+        //어뎁터 설정
+        adapter_like = new MusicAdapter(getActivity());
+        //레이아웃 매니저 설정
+        layoutManager_like = new LinearLayoutManager(getActivity());
+        //리사이클러뷰에 어댑터, 매니저 세팅
+        recyclerViewLike.setLayoutManager(layoutManager_like);
+        likeRecyclerViewListUpdate(getMusicList_like());
+    }
+
+    //id 설정
     private void findViewByIdFunc(View view) {
         recyclerViewLike = view.findViewById(R.id.recyclerViewLike);
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
 
-    private void likeRecyclerViewListUpdate(ArrayList<MusicData> arrayList){
+    private void likeRecyclerViewListUpdate(ArrayList<MusicData> arrayList) {
 
         // 어댑터에 데이터리스트 세팅
         adapter_like.setMusicData(arrayList);
@@ -99,8 +102,9 @@ public class Fragment_Like extends Fragment {
         return musicList_like;
     }
 
-    public MusicAdapter getAdapter_like() {
-        return adapter_like;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override

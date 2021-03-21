@@ -41,7 +41,7 @@ public class Fragment_Music extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        mainActivity = (MainActivity)getActivity();
+        mainActivity = (MainActivity) getActivity();
     }
 
     @Override
@@ -57,7 +57,7 @@ public class Fragment_Music extends Fragment {
         findViewByIdFunc(view);
 
         dbHelper = MusicDBHelper.getInstance(mainActivity);
-
+        //중복 방지 equals 를 통해 모든 음악파일 ArrayList 에 담음
         musicList = dbHelper.compareArrayList();
 
         adapter = new MusicAdapter(getActivity(), musicList);
@@ -65,16 +65,15 @@ public class Fragment_Music extends Fragment {
         linearLayoutManager = new LinearLayoutManager(getActivity());
 
         recyclerView.setLayoutManager(linearLayoutManager);
-
+        //리사이클러뷰 어댑터 세팅
         recyclerViewListUpdate(musicList);
-
+        //리사이클러뷰 클릭 이벤트
         adapter.setOnItemClickListener(new MusicAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int pos) {
                 mainActivity.setPlayerData(pos, 1);
             }
         });
-
         return view;
     }
 
@@ -88,22 +87,13 @@ public class Fragment_Music extends Fragment {
         super.onViewCreated(view, savedInstanceState);
     }
 
-    private void recyclerViewListUpdate(ArrayList<MusicData> arrayList){
-
-        // 어댑터에 데이터리스트 세팅
+    private void recyclerViewListUpdate(ArrayList<MusicData> arrayList) {
+        //어댑터에 데이터리스트 세팅
         adapter.setMusicData(arrayList);
-
-        // recyclerView에 어댑터 세팅
+        //recyclerView 에 어댑터 세팅
         recyclerView.setAdapter(adapter);
+        //갱신
         adapter.notifyDataSetChanged();
-    }
-
-    public MusicAdapter getAdapter() {
-        return adapter;
-    }
-
-    public ArrayList<MusicData> getMusicList() {
-        return musicList;
     }
 
     @Override
