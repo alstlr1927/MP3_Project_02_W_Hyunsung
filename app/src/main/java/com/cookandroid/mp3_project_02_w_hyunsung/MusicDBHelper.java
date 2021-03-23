@@ -149,6 +149,19 @@ public class MusicDBHelper extends SQLiteOpenHelper {
         return returnValue;
     }
 
+    public boolean updateCountDataToDB(MusicData data) {
+        boolean returnValue = false;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        try {
+            String query = "UPDATE musicTBL SET click = " + data.getPlayCount() + ", liked = " + data.getLiked() + " WHERE id = '" + data.getId() + "';";
+            sqLiteDatabase.execSQL(query);
+            returnValue = true;
+        } catch (Exception e) {
+            return false;
+        }
+        return returnValue;
+    }
+
     // sdCard 안의 음악을 검색한다
     public ArrayList<MusicData> findMusic() {
         ArrayList<MusicData> sdCardList = new ArrayList<>();

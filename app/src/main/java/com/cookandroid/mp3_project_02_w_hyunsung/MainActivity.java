@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.ColorSpace;
+import android.graphics.Paint;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -62,10 +63,10 @@ public class MainActivity extends AppCompatActivity {
     private MusicAdapter adapter;
 
     private DrawerLayout drawerLayout;
-    private ImageView ivPlayerAlbumCover, imgDrawerMenuAlbumCover;
-    private TextView tvPlayerTitle, tvPlayerArtist, tvCurrentTime, tvDuration;
+    private ImageView ivPlayerAlbumCover, imgDrawerMenuAlbumCover, ivBackCover;
+    private TextView tvPlayerTitle, tvPlayerArtist, tvCurrentTime, tvDuration, tvCount;
     private SeekBar seekBar;
-    private Button btnPrev, btnPlayPause, btnNext, btnLike, btnShuffle;
+    private Button btnPrev, btnPlayPause, btnNext, btnLike, btnShuffle, btnMenu;
     private FrameLayout frameImg;
 
     private ArrayList<MusicData> musicList = new ArrayList<>();
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         //로딩화면 호출
         startLoadingActivity();
         //외부 접근 허용
@@ -124,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
                     if (nowDurationForSec <= 5) {
                         if (index == 0) {
                             index = musicList.size();
-                            setPlayerData(index, LIST);
                         }
                         index--;
                         setPlayerData(index, LIST);
@@ -152,10 +153,9 @@ public class MainActivity extends AppCompatActivity {
                 if (shuffle == false) {
                     if (index == musicList.size() - 1) {
                         index = -1;
-                        setPlayerData(index, LIST);
                     }
                     index++;
-                    setPlayerData(index, 1);
+                    setPlayerData(index, LIST);
                 } else {
                     index = random.nextInt(musicList.size());
                     setPlayerData(index, LIST);
@@ -197,10 +197,53 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "노래를 골라주세요", Toast.LENGTH_SHORT).show();
             }
         });
-        ivPlayerAlbumCover.setOnClickListener((View v) -> {
-            ObjectAnimator animator = ObjectAnimator.ofFloat(ivPlayerAlbumCover, "rotationY", 0, 360);
-            animator.setDuration(1000);
-            animator.start();
+        frameImg.setOnClickListener((View v) -> {
+            if (ivBackCover.getVisibility() == View.INVISIBLE) {
+                ObjectAnimator animator = ObjectAnimator.ofFloat(ivPlayerAlbumCover, "rotationY", 0, 180);
+                animator.setDuration(1000);
+                animator.start();
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(1000);
+                        ivPlayerAlbumCover.setVisibility(View.INVISIBLE);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ivBackCover.setVisibility(View.VISIBLE);
+                                try {
+                                    tvCount.setText(musicData.getPlayCount() + "번 플레이됨");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(MainActivity.this, "노래를 골라주세요", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
+                thread.start();
+            } else if (ivPlayerAlbumCover.getVisibility() == View.INVISIBLE) {
+                tvCount.setText("");
+                ObjectAnimator animator = ObjectAnimator.ofFloat(ivBackCover, "rotationY", 0, 180);
+                animator.setDuration(1000);
+                animator.start();
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(1000);
+                        ivBackCover.setVisibility(View.INVISIBLE);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ivPlayerAlbumCover.setVisibility(View.VISIBLE);
+                            }
+                        });
+                    }
+                });
+                thread.start();
+            }
         });
         btnShuffle.setOnClickListener((View v) -> {
             if (shuffle == false) {
@@ -210,6 +253,9 @@ public class MainActivity extends AppCompatActivity {
                 shuffle = false;
                 btnShuffle.setBackgroundResource(R.drawable.shuffle_white);
             }
+        });
+        btnMenu.setOnClickListener((View v) -> {
+            drawerLayout.openDrawer(Gravity.LEFT);
         });
     }
 
@@ -293,6 +339,9 @@ public class MainActivity extends AppCompatActivity {
         btnLike = findViewById(R.id.btnLike);
         frameImg = findViewById(R.id.frameImg);
         btnShuffle = findViewById(R.id.btnShuffle);
+        btnMenu = findViewById(R.id.btnMenu);
+        ivBackCover = findViewById(R.id.ivBackCover);
+        tvCount = findViewById(R.id.tvCount);
 
         //DB Helper 설정 && 뮤직 리스트 꺼내오기
         DBHelper = MusicDBHelper.getInstance(MainActivity.this);
@@ -321,6 +370,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (func == SEARCH) {
             musicData = musicData_search;
         }
+        musicData.setPlayCount(musicData.getPlayCount() + 1);
+        DBHelper.updateCountDataToDB(musicData);
 
         SimpleDateFormat sdf = new SimpleDateFormat("mm:ss");
         tvPlayerTitle.setText(musicData.getTitle());
